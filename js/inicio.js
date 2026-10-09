@@ -159,11 +159,38 @@ async function iniciar() {
     const telas = await import(`${BASE}app/app.js?v=${encodeURIComponent(versao.versao)}`);
     await telas.iniciarApp({ app, sair: sairDoApp, versao: versao.versao });
   } catch (erro) {
-    const semAcesso = /negado|sem login|not found|row-level|permission|policy|403|400/i.test(String(erro?.message ?? erro));
-    telaLogin(aviso('fora', semAcesso
-      ? 'Seu acesso não está liberado. Fale com o responsável.'
-      : `Não foi possível abrir o app: ${erro.message ?? erro}`));
+    telaErro(await explicarErro(id, erro), String(erro?.message ?? erro));
   }
+}
+
+// O servidor responde igual para "arquivo faltando" e "usuário sem acesso";
+// o próprio cadastro (que todo usuário logado lê) diz qual é o caso.
+async function explicarErro(id, erro) {
+  if (!navigator.onLine) return { texto: 'Sem internet, e o app ainda não foi baixado neste aparelho. Conecte à internet e tente de novo.', tentar: true };
+  try {
+    const { data, error } = await supabase.from('perfis').select('ativo').eq('id', id).maybeSingle();
+    if (!error && !data) return { texto: 'Este login não tem cadastro no app. Fale com o responsável.', tentar: false };
+    if (!error && data.ativo === false) return { texto: 'Este usuário está desativado. Fale com o responsável.', tentar: false };
+  } catch { /* sem resposta: trata como falha ao baixar */ }
+  return {
+    texto: 'Não foi possível baixar o app agora. Tente de novo em instantes; se continuar, avise o responsável.',
+    tentar: true,
+  };
+}
+
+function telaErro({ texto, tentar }, detalhe) {
+  app.innerHTML = `${topo}
+  <main class="conteudo">
+    <section class="cartao">
+      <h2>Não foi possível abrir</h2>
+      ${aviso('fora', texto)}
+      ${tentar ? '<button class="botao" id="tentar" type="button">Tentar de novo</button>' : ''}
+      <button class="botao secundario-btn" id="sair-erro" type="button">Sair</button>
+      <p class="secundario detalhe-erro">Detalhe: ${esc(detalhe)}</p>
+    </section>
+  </main>`;
+  document.getElementById('tentar')?.addEventListener('click', iniciar);
+  document.getElementById('sair-erro').addEventListener('click', sairDoApp);
 }
 
 if (supabase) {

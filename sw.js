@@ -3,7 +3,7 @@
    - Telas do app (/app/...): só existem no aparelho depois do login, guardadas
      pelo carregador (js/inicio.js). Sem login, este endereço não entrega nada.
    A cada versão publicada, troque o número em CACHE. */
-const CACHE = 'registro-pcp-site-v3';
+const CACHE = 'registro-pcp-site-v4';
 const CACHE_TELAS = 'registro-pcp-telas';
 const ARQUIVOS = [
   './',

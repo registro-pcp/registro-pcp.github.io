@@ -117,3 +117,4 @@ input:focus-visible, select:focus-visible, button:focus-visible {
 .status.fora { color: var(--fora-texto); background: var(--fora-fundo); }
 
 .rodape { text-align: center; color: var(--cor-muted); font-size: 13px; margin-top: 20px; }
+.detalhe-erro { font-size: 12px; margin-top: 12px; word-break: break-word; }
